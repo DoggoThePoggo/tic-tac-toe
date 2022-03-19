@@ -1,3 +1,4 @@
+from msilib.schema import CheckBox
 import tkinter as tk
 
 
@@ -16,10 +17,14 @@ root.geometry(f'{app_width}x{app_height}+{screen_width}+{screen_height}')
 
 root.title('Pro League Tic Tac Toe (Enhanced Reboot Director\'s cut Extended Edition)')
 
+
+
+#--------#
+# Styles #
+#--------#
+
 main_frame_style = {
-    'bg': 'white',
-    'padx': 30,
-    'pady': 30
+    'bg': 'white'
 }
 
 h1_style = {
@@ -41,6 +46,10 @@ button_style = {
     'relief': 'groove'
 }
 
+entry_style = {
+    'relief': 'solid'
+}
+
 # Change button color if mouse is hovering
 def button_enter(e):    
     e.widget['bg'] = '#1c7abd'
@@ -54,37 +63,55 @@ def button_leave(e):
 # Start Menu #
 #------------#
 
-start_frame = tk.Frame(root)
-start_frame.config(main_frame_style)
+# Top frame for labels
+start_frame_top = tk.Frame(root)
+start_frame_top.config(main_frame_style)
 
-# Labels
-welcome_label = tk.Label(start_frame, text='Tic Tac Toe')
+welcome_label = tk.Label(start_frame_top, text='Tic-Tac-Toe')
 welcome_label.config(h1_style)
 
-description_label = tk.Label(start_frame, text='For cool kids to play Tic Tac Toe on Windows')
+description_label = tk.Label(start_frame_top, text='For cool kids to play Tic Tac Toe on Windows')
 description_label.config(h3_style)
 
-# Buttons
-def start_game():
-    start_frame.pack_forget()
-    setup_frame.pack()
+def coolness_checker():
+    if start_button['state'] == 'disabled':
+        start_button['state'] = 'normal'
+    else:
+        start_button['state'] = 'disabled'
 
-start_button = tk.Button(start_frame, text='Start', command=start_game)
-quit_button = tk.Button(start_frame, text='Quit', command=root.quit)
+checkbox = tk.IntVar()
+coolness_checkbox = tk.Checkbutton(start_frame_top, text='I swear I am a cool kid', command=coolness_checker, variable=checkbox)
+    
+coolness_checkbox.config(h3_style,font=('calibri',12))
+
+welcome_label.grid()
+description_label.grid()
+coolness_checkbox.grid()
+
+# Btm frame for buttons
+start_frame_btm = tk.Frame(root)
+start_frame_btm.config(main_frame_style)
+
+def pack_setup():
+    start_frame_top.forget()
+    start_frame_btm.forget()
+    setup_frame_top.pack(pady=(175,0))
+    setup_frame_btm.pack(side='bottom', fill='both')
+
+start_button = tk.Button(start_frame_btm, text='Start', state='disabled', command=pack_setup)
+quit_button = tk.Button(start_frame_btm, text='Quit', command=root.quit)
 
 start_button.bind('<Enter>', button_enter)
-quit_button.bind('<Enter>', button_enter)
 start_button.bind('<Leave>', button_leave)
+
+quit_button.bind('<Enter>', button_enter)
 quit_button.bind('<Leave>', button_leave)
 
 start_button.config(button_style, width=12)
 quit_button.config(button_style, width=12)
 
-# Element placements
-welcome_label.grid(column=0,  row=0, columnspan=2, padx=15, pady=15)
-description_label.grid(column=0,  row=1, columnspan=2, padx=15, pady=15)
-quit_button.grid(column=1,  row=2, padx=50, pady=30)
-start_button.grid(column=0,  row=2, padx=50, pady=30)
+start_button.pack(side='left', padx=25, pady=25)
+quit_button.pack(side='right', padx=25, pady=25)
 
 
 
@@ -92,34 +119,84 @@ start_button.grid(column=0,  row=2, padx=50, pady=30)
 # Setup #
 #-------#
 
-setup_frame = tk.Frame(root)
-setup_frame.config(main_frame_style)
+# Top frame for labels
+setup_frame_top = tk.Frame(root)
+setup_frame_top.config(main_frame_style)
 
-# Labels
-instructions = tk.Label(setup_frame, text='Please enter your names!')
+instructions = tk.Label(setup_frame_top, text='Please enter your names')
 instructions.config(h1_style)
 
-player1_name_label = tk.Label(setup_frame, text='Player 1:')
-player2_name_label = tk.Label(setup_frame, text='Player 2:')
+player1_name_label = tk.Label(setup_frame_top, text='Player 1:')
+player2_name_label = tk.Label(setup_frame_top, text='Player 2:')
 player1_name_label.config(h3_style)
 player2_name_label.config(h3_style)
 
-# Name input and order selection
+def field_checker(*args):
+    player1_name = player1_name_var.get().strip()
+    player2_name = player2_name_var.get().strip()
+
+    error_box.grid_forget()
+    
+    if player1_name and player2_name:
+        if player1_name == player2_name:
+            error_box.grid(row=3, columnspan=2, pady=(25,0))
+            next_button['state'] = 'disabled'
+        else:
+            next_button['state'] = 'normal'
+            
+    else:
+        next_button['state'] = 'disabled'
+
 player1_name_var = tk.StringVar()
-player1_name = player1_name_var.get()
-player1_name_entry = tk.Entry(setup_frame, textvariable=player1_name_var, justify='center')
+player1_name_var.trace('w', field_checker)
+player1_name_entry = tk.Entry(setup_frame_top, textvariable=player1_name_var, justify='center')
 
 player2_name_var = tk.StringVar()
-player2_name = player2_name_var.get()
-player2_name_entry = tk.Entry(setup_frame, textvariable=player2_name_var, justify='center')
+player2_name_var.trace('w', field_checker)
+player2_name_entry = tk.Entry(setup_frame_top, textvariable=player2_name_var, justify='center')
 
-# Element placements
+player1_name_entry.config(entry_style)
+player2_name_entry.config(entry_style)
+
+error_box = tk.Label(setup_frame_top, text='Both names cannot be identical')
+error_box.config(h3_style)
+
 instructions.grid(column=0, row=0, columnspan=2)
+
 player1_name_label.grid(column=0, row=1)
-player2_name_label.grid(column=1, row=1)
 player1_name_entry.grid(column=0, row=2)
+
+player2_name_label.grid(column=1, row=1)
 player2_name_entry.grid(column=1, row=2)
 
+# Btm frame for buttons
+setup_frame_btm = tk.Frame(root)
+setup_frame_btm.config(main_frame_style)
+
+def pack_game():
+    setup_frame_top.forget()
+    setup_frame_btm.forget()
+    game_frame.pack()
+    print(player1_name_var)
+
+def unpack_setup():
+    setup_frame_top.forget()
+    setup_frame_btm.forget()
+    pack_start()
+
+next_button = tk.Button(setup_frame_btm, text='Next', state='disabled', command=pack_game)
+back_button = tk.Button(setup_frame_btm, text='Back', command=unpack_setup)
+
+next_button.bind('<Enter>', button_enter)
+back_button.bind('<Enter>', button_enter)
+next_button.bind('<Leave>', button_leave)
+back_button.bind('<Leave>', button_leave)
+
+next_button.config(button_style, width=12)
+back_button.config(button_style, width=12)
+
+next_button.pack(side='left', padx=25, pady=25)
+back_button.pack(side='right', padx=25, pady=25)
 
 
 #------#
@@ -127,9 +204,16 @@ player2_name_entry.grid(column=1, row=2)
 #------#
 
 game_frame = tk.Frame(root)
+funny_label = tk.Label(game_frame, text='Hi')
+funny_label.pack()
 
+def pack_start():
+    start_frame_top.pack(pady=(175,0))
+    start_frame_btm.pack(side='bottom', fill='both')
+    checkbox.set(0) # ensure checkbox is clear
+    start_button['state'] = 'disabled' # ensure start button is disabled
 
+# Execute mainloop
 
-
-start_frame.pack()
+pack_start()
 root.mainloop()
